@@ -1,0 +1,29 @@
+#logo {
+    float: center;
+    height: 100px;
+    width: 100px;
+    padding: 0px;
+}
+
+#mainCon {
+    padding-top: 15px;
+}
+
+#mainCol {
+    background-color: white;
+    padding: 15px;
+}
+
+#R-table {
+    text-align: center;
+    padding:inherit;
+}
+
+th {
+    font-size: 14px;
+}
+
+th, td {
+    text-align: center;
+    vertical-align: middle;
+}

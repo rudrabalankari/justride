@@ -8,14 +8,16 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 
-import com.justride.dao.DaoImplementation;
+import com.justride.dao.BookingDao;
+import com.justride.dao.UserDao;
 import com.justride.models.Car;
 import com.justride.models.User;
 import com.justride.util.GetConnection;
 
-public class ServiceImplementation implements IService {
+public class BookingService implements IBookingService {
 
-	DaoImplementation dao = new DaoImplementation();
+	BookingDao dao = new BookingDao();
+	UserDao userdao = new UserDao();
 
 	@Override
 	public boolean validateDate(String InDateStamp) {
@@ -34,48 +36,6 @@ public class ServiceImplementation implements IService {
 	@Override
 	public ArrayList<Car> getValidCarList(String intimeStamp, String outTimeStamp, ArrayList<String> locationList) {
 		return dao.getValidCarList(intimeStamp, outTimeStamp, locationList);
-	}
-
-	@Override
-	public boolean validateEmail(String email) {
-		return dao.validateEmail(email);
-	}
-
-	@Override
-	public String validateUser(User user) {
-
-		String error = "";
-		String password = user.getPassword();
-		if (user.getCnfPwd().equals(password)) {
-			if (validateEmail(user.getEmail())) {
-				error = "email exists";
-				// model.addAttribute("error", error);
-				return error;
-
-			} else {
-				registrationSubmit(user);
-				// model.addAttribute("email", "Registered as " +
-				// user.getEmail());
-				// model.addAttribute("status", "Registred Successfully");
-				return "/home2";
-			}
-		}
-		error = "invalid password!";
-		// model.addAttribute("error", error);
-		return "/register";
-
-	}
-
-	@Override
-	public String registrationSubmit(User user) {
-
-		return dao.registrationSubmit(user);
-
-	}
-
-	@Override
-	public String validateUser(String emailId, String password) {
-		return dao.validateUser(emailId, password);
 	}
 
 	@Override
@@ -123,6 +83,11 @@ public class ServiceImplementation implements IService {
 	@Override
 	public ArrayList<Car> CarsByCat(String[] categories) {
 		return dao.CarsByCat(categories);
+	}
+
+	@Override
+	public ArrayList<Car> CarsBySeats(String[] seats) {
+		return dao.CarsBySeats(seats);
 	}
 
 }

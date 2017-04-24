@@ -1,0 +1,64 @@
+#titleHeader {
+    vertical-align: middle;
+    align-content: center;
+}
+
+#mainCon {
+    padding-top: 15px;
+}
+
+#mainCol {
+    background-color: white;
+    padding: 8px;
+    border: 0px;
+}
+
+li.icon {
+    float: left;
+}
+
+ul.type {
+    list-style-type: none;
+}
+
+.panel-heading {
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.panel-body {
+    padding-bottom: 0px;
+}
+
+.panel-footer {
+    padding-top: 0px;
+    padding-bottom: 0px;
+    color: white;
+    border: 0px;
+    background-color: white;
+}
+
+.icon{
+    float:none;
+}
+
+.table {
+    text-align: left;
+    font-size: 12px;
+}
+
+#span01 {
+    font-size:20px;
+    color:grey;
+}
+
+#logo {
+    float: center;
+    height: 100px;
+    width: 100px;
+    padding: 0px;
+}
+
+#C-table {
+    padding: 0px;
+}

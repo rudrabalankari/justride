@@ -11,11 +11,16 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
+import com.justride.models.Booking;								   
 import com.justride.models.Car;
 import com.justride.models.User;
 import com.justride.util.GetConnection;
 
-public class DaoImplementation implements IDao {
+public class BookingDao implements IBookingDao {
+	
+	LocationDao locationDao = new LocationDao();
+	CarDao carDao = new CarDao();
+
 	ArrayList<Car> validCarsList = new ArrayList<Car>();
 	String inTimeStamp2 = "", outTimeStamp2 = "";
 	ArrayList<String> locationList = new ArrayList<String>();
@@ -28,143 +33,6 @@ public class DaoImplementation implements IDao {
 	@Override
 	public float calculateAmount(String InDateStamp, String outDateStamp, int carId) {
 		return 0;
-	}
-
-	@Override
-	public Car getCarbyId(int carId) {
-		Car car = null;
-		Connection con;
-		try {
-			con = GetConnection.getConnection();
-			if (con != null) {
-				String sql = "select carid,carname,category, mspeed, cost, seat from cardetails where carid=?";
-				String sql2 = "select location from car_location where carid=?";
-				java.sql.PreparedStatement stmt = con.prepareStatement(sql);
-				java.sql.PreparedStatement stmt2 = con.prepareStatement(sql2);
-				stmt.setInt(1, carId);
-				stmt2.setInt(1, carId);
-				ResultSet rs = stmt.executeQuery();
-				if (rs != null) {
-					while (rs.next()) {
-						int carIdd = rs.getInt("carid");
-						String carName = rs.getString("carname");
-						String imgUrl = "http://localhost:8080/justride/resources/images/" + carName + ".png";
-						String category = rs.getString("category");
-						String mspeed = rs.getString("mspeed");
-						int cost = rs.getInt("cost");
-						int seats = rs.getInt("seat");
-
-						car = new Car(carIdd, cost, carName, category, mspeed, seats);
-						ResultSet rs2 = stmt2.executeQuery();
-						String location = "";
-						while (rs2.next()) {
-							location = rs2.getString("location");
-						}
-						car.setImgName(imgUrl);
-						car.setLocation(location);
-					}
-				}
-			}
-
-		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-
-		return car;
-	}
-
-	@Override
-	public String registrationSubmit(User user) {
-
-		String insertStatus = "invalid";
-		System.out.println("In the registration submit");
-		String fName = user.getFirstName();
-		String lName = user.getLastName();
-		String eMail = user.getEmail();
-		String password = user.getPassword();
-		String phone = user.getPhone();
-		String cardNo = user.getCardNo();
-		String zip = user.getZip();
-
-		Connection conn;
-		try {
-			conn = GetConnection.getConnection();
-			if (conn != null) {
-				System.out.println("Connected");
-				if (!(fName == null || lName == null || eMail == null || password == null || phone == null
-						|| cardNo == null || zip == null)) {
-
-					if (!validateEmail(eMail)) {
-						String sql = "insert into UserRegistration (firstname, lastname, email, password, phone, cardno, zip) values (?,?,?,?,?,?,?);";
-						try {
-							java.sql.PreparedStatement statement = conn.prepareStatement(sql);
-							statement.setString(1, fName);
-							statement.setString(2, lName);
-							statement.setString(3, eMail);
-							statement.setString(4, password);
-							statement.setString(5, phone);
-							statement.setString(6, cardNo);
-							statement.setString(7, zip);
-							int count = statement.executeUpdate();
-							if (count > 0) {
-								System.out.println("User registered Successfully!");
-								insertStatus = "inserted";
-							} else {
-								System.out.println("User registration failed!");
-							}
-
-						} catch (SQLException e) {
-							e.printStackTrace();
-						}
-
-					} else {
-						insertStatus = "existingEmail";
-						return insertStatus;
-					}
-
-				} else {
-					insertStatus = "emptyField";
-				}
-
-			}
-		} catch (ClassNotFoundException e1) {
-			
-			e1.printStackTrace();
-		}
-		return insertStatus;
-	}
-
-	@Override
-	public boolean validateEmail(String email) {
-
-		boolean existingID = false;
-		Connection con;
-		try {
-			con = GetConnection.getConnection();
-			if (con != null) {
-				String sql = "select email from userregistration";
-				Statement stmt = con.createStatement();
-				ResultSet rs = stmt.executeQuery(sql);
-				while (rs.next()) {
-					String eMailTmp = rs.getString("email");
-					if (eMailTmp.equalsIgnoreCase(email)) {
-						existingID = true;
-					}
-				}
-			}
-
-		} catch (ClassNotFoundException e) {
-
-			e.printStackTrace();
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-
-		System.out.println("Existing Email ID============" + existingID);
-		return existingID;
-
 	}
 
 	@Override
@@ -186,7 +54,6 @@ public class DaoImplementation implements IDao {
 			String sql = "select carid from bookinginfo where intimestamp < ? and outtimestamp >= ?";
 			String sql2 = "select carid from bookinginfo where outtimestamp > ? and outtimestamp <= ?";
 			String sql3 = "select carid from bookinginfo where intimestamp >= ?  and intimestamp < ?";
-			String sql4 = "select carid from cardetails";
 
 			java.sql.PreparedStatement stmt = con.prepareStatement(sql);
 			java.sql.PreparedStatement stmt2 = con.prepareStatement(sql2);
@@ -198,14 +65,8 @@ public class DaoImplementation implements IDao {
 			stmt3.setString(1, intimeStamp);
 			stmt3.setString(2, outTimeStamp);
 
-			Statement stmt4 = con.createStatement();
+			carIds = carDao.getAllCarIds();
 
-			ResultSet rs4 = stmt4.executeQuery(sql4);
-
-			while (rs4.next()) {
-				Integer carId = rs4.getInt("carid");
-				carIds.add(carId);
-			}
 
 			ResultSet rs = stmt.executeQuery();
 			ResultSet rs2 = stmt2.executeQuery();
@@ -247,12 +108,12 @@ public class DaoImplementation implements IDao {
 			carIds.removeAll(invalidCars);
 		}
 		System.out.println("Total car Ids valid at all locations=======" + carIds.size());
-		locationCarIds = getCarIdsBylocation(locationList);
+		locationCarIds = locationDao.getCarIdsBylocation(locationList);
 		carIds.retainAll(locationCarIds);
 		Iterator<Integer> iter = carIds.iterator();
 		while (iter.hasNext()) {
 			Integer carId = (Integer) iter.next();
-			validCars.add(getCarbyId(carId));
+			validCars.add(carDao.getCarbyId(carId));
 		}
 		if (validCars != null) {
 			System.out.println("Valid cars length at given location(s)====" + validCars.size());
@@ -263,93 +124,13 @@ public class DaoImplementation implements IDao {
 
 	}
 
-	@Override
-	public ArrayList<Integer> getCarIdsBylocation(ArrayList<String> locations) {
-		// List possibleValues = ...
-		// select carid, location from car_location where location in ('UNC,
-		// Charlotte','Down Town');
-
-		ArrayList<Integer> locationIds = new ArrayList<Integer>();
-		Connection con;
-		try {
-			con = GetConnection.getConnection();
-			if (con != null) {
-				StringBuilder builder = new StringBuilder();
-
-				for (int i = 0; i < locations.size(); i++) {
-					builder.append("?,");
-					System.out.println("Inside the loop");
-					System.out.println(builder.toString());
-				}
-
-				String query = "select carid, location from car_location where location in ("
-						+ builder.deleteCharAt(builder.length() - 1).toString() + ")";
-				java.sql.PreparedStatement stmt = con.prepareStatement(query);
-
-				System.out.println("Query Builder=============" + query);
-
-				int index = 1;
-				for (String location : locations) {
-					stmt.setString(index++, location);
-				}
-				ResultSet rs = stmt.executeQuery();
-				if (rs != null) {
-					while (rs.next()) {
-						locationIds.add(rs.getInt("carid"));
-					}
-				}
-
-			}
-
-		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-		if (locationIds.size() > 0) {
-			System.out.println("Size of locationIds==========" + locationIds.size());
-		} else {
-			System.out.println("Size of locationIds=========== 0");
-		}
-
-		return locationIds;
-	}
-
+	
 	@Override
 	public ArrayList<Car> filterCars(ArrayList<Car> cars) {
 		return null;
 	}
 
-	@Override
-	public String validateUser(String emailId, String password) {
-		String userValidation = "invalidEmail";
-		if (validateEmail(emailId)) {
-			Connection conn;
-			try {
-				conn = GetConnection.getConnection();
-				if (conn != null) {
-					String sql = "select password from userregistration where email=?";
-					java.sql.PreparedStatement stmt = conn.prepareStatement(sql);
-					stmt.setString(1, emailId);
-					ResultSet rs = stmt.executeQuery();
-					while (rs.next()) {
-						if (password.equals(rs.getString("password"))) {
-							userValidation = "home2";
-						} else {
-							userValidation = "invalidPwd";
-						}
-					}
-				}
-			} catch (ClassNotFoundException e) {
-				e.printStackTrace();
-			} catch (SQLException e) {
-				e.printStackTrace();
-			}
-		}
-
-		return userValidation;
-	}
-
+	
 	@Override
 	public ArrayList<Car> CarsByLocCatSeat(String[] locations, String[] categories, String[] seats) {
 
@@ -379,7 +160,7 @@ public class DaoImplementation implements IDao {
 		while (iterator.hasNext()) {
 			Car car = (Car) iterator.next();
 			System.out.println("seats:" + car.getSeats());
-			System.out.println("categroy:" + car.getCategory());
+			System.out.println("category:" + car.getCategory());
 
 			if (categoryList.contains(car.getCategory()) && seatsList.contains(car.getSeats())) {
 				System.out.println("Inside the loop");
@@ -431,6 +212,7 @@ public class DaoImplementation implements IDao {
 
 	@Override
 	public ArrayList<Car> CarsByLocSeats(String[] locations, String[] seats) {
+		
 		ArrayList<String> locationList = new ArrayList<String>();
 		ArrayList<Integer> seatsList = new ArrayList<Integer>();
 
@@ -519,6 +301,82 @@ public class DaoImplementation implements IDao {
 			System.out.println("Valid cars by Location is empty!");
 		}
 		return validCarListbyCategory;
+
+	}
+	
+	@Override
+	public ArrayList<Car> CarsBySeats(String[] seats) {
+		System.out.println("Only Seats Selected");
+		ArrayList<Integer> seatsList = new ArrayList<Integer>();
+		ArrayList<Car> validCarListBySeats = new ArrayList<Car>();
+		for (int i = 0; i < seats.length;i++) {
+			seatsList.add(Integer.parseInt(seats[i]));
+		}
+		
+		if(validCarsList.size()>0) {
+			Iterator<Car> iterator = validCarsList.iterator();
+			while(iterator.hasNext()) {
+				Car car = (Car) iterator.next();
+				if (seatsList.contains(car.getSeats())) {
+					validCarListBySeats.add(car);
+				}
+			}
+		} else {
+			System.out.println("Valid cars by location is empty!");
+		}
+		return validCarListBySeats;
+	}
+
+	@Override
+	public int insertBooking(Booking booking) {
+
+		Connection conn;
+		int bookingId = -1;
+
+		try {
+			conn = GetConnection.getConnection();
+
+			if (conn != null) {
+
+				// select max(booking_id) from bookinginfo;
+				String sql = "insert into bookinginfo (email, carid, intimestamp, outtimestamp, pickup_location, amount) values (?,?,?,?,?,?)";
+				String sql2 = "select max(booking_id) from bookinginfo";
+
+				try {
+					java.sql.PreparedStatement statement = conn.prepareStatement(sql);
+					java.sql.PreparedStatement statement2 = conn.prepareStatement(sql2);
+					statement.setString(1, booking.getEmail());
+					statement.setInt(2, booking.getCarId());
+					DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd hh:mm:ss");
+					String intime = booking.getIntimeStamp().format(formatter);
+					System.out.println("In time stamp==========" + intime);
+					String outTime = booking.getOutTimeStamp().format(formatter);
+					System.out.println("In time stamp==========" + outTime);
+					statement.setString(3, intime);
+					statement.setString(4, outTime);
+					statement.setString(5, booking.getPickupLocation());
+					statement.setFloat(6, booking.getAmount());
+					// int count = statement.executeUpdate();
+					statement.executeUpdate();
+					ResultSet rs = statement2.executeQuery();
+
+					if (rs != null) {
+						while (rs.next()) {
+							bookingId = rs.getInt("max(booking_id)");
+						}
+					}
+
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+
+			}
+
+		} catch (ClassNotFoundException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		return bookingId;
 
 	}
 

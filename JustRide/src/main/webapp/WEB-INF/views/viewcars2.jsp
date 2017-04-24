@@ -30,27 +30,10 @@
 	<div class="container text-center">
 
 		<a href="http://localhost:8080/justride/">
-			<ul class="nav navbar-nav navbar-right">
-				<div class="collapse navbar-collapse"
-					id="bs-example-navbar-collapse-1">
-					<ul class="nav navbar-nav navbar-right">
-						<!-- <li> -->
-						<div class="btn-group" role="group" aria-label="...">
-							<a href="justride/login">
-								<button type="button" class="btn btn-primary"
-									style="margin: 13px 12px 12px 10px; background-color: coral">LOG
-									IN</button>
-							</a> <a href="justride/register">
-								<button type="button" class="btn btn-primary"
-									style="margin: 13px 12px 12px 10px; background-color: coral">REGISTER</button>
-							</a>
-						</div>
-						<!-- </li> -->
-					</ul>
-				</div>
-			</ul>
+			<button type="button" class="btn btn-primary"
+				style="margin: 13px 12px 12px 10px; width: 100px; background-color: coral; float: right;">Log
+				Out</button>
 		</a>
-
 		<div class="row">
 			<div class="col-sm-2 well">
 				<h4 style="font-weight: bold;">Filter Your Result</h4>

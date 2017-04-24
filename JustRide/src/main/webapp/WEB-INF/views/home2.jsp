@@ -27,12 +27,21 @@
 			<div class="navbar-header">
 				<a class="navbar-brand" href="" style="font-size: 40px">JustRide</a>
 			</div>
-			<ul class="nav navbar-nav navbar-right">
-				<c:if test="${not empty user}">
-					<p align="right">
-						<b>Welcome ${email}</b>
-					</p>
-				</c:if>
+			<form action="myRides">
+				<ul class="nav navbar-nav navbar-right">
+
+					<c:if test="${not empty user}">
+						<p align="right">
+							<b>Welcome ${email}</b>
+						</p>
+					</c:if>
+					<button type="submit" class="btn btn-primary"
+						style="margin: 13px 12px 12px 10px; background-color: coral">My
+						Rides</button>
+					<button type="button" class="btn btn-primary"
+						style="margin: 13px 12px 12px 10px; background-color: coral">Log
+						Out</button>
+			</form>
 			</ul>
 		</div>
 	</nav>
@@ -52,7 +61,7 @@
 							<option value="UNC, Charlotte" selected="selected">UNC,
 								Charlotte</option>
 							<option value="Down Town">Down Town</option>
-							<option value="Concord  Mills">Concord Mills</option>
+							<option value="Concord Mills">Concord Mills</option>
 						</select>
 
 
